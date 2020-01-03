@@ -25,17 +25,20 @@ public class SimpleMapReduce<INk,INv,Mk,Mv,R> extends MapReduceTemplate<INk,INv,
     }
 
     @Override
-    protected Map<Mk, List<Mv>> dataShuffling(Stream<Pair<Mk,Mv>> mappedStream, Comparator<Pair<Mk,Mv>> compareFunction) {
+    protected Stream<Pair<Mk, List<Mv>>> dataShuffling(Stream<Pair<Mk,Mv>> mappedStream, Comparator<Pair<Mk,Mv>> compareFunction) {
         return mappedStream
                 .sorted(compareFunction)
-                .collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+                .collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())))
+                .entrySet()
+                .stream()
+                .map(entry -> new Pair<>(entry.getKey(),entry.getValue()));
     }
 
     @Override
-    protected Stream<List<R>> reduce(Map<Mk, List<Mv>> collected, BiFunction<Mk, List<Mv> ,List<R>> reduceFunction) {
-        return collected.entrySet()
-                .stream()
-                .map(entry -> reduceFunction.apply(entry.getKey(),entry.getValue()));
+    protected Stream<List<R>> reduce(Stream<Pair<Mk, List<Mv>>> collected, BiFunction<Mk, List<Mv> ,List<R>> reduceFunction) {
+        return collected
+                .map(entry -> reduceFunction
+                        .apply(entry.getKey(),entry.getValue()));
     }
 
     @Override
