@@ -5,11 +5,9 @@ import com.giobart.mapreduce.impl.Pair;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public abstract class MapReduceTemplate<INk,INv,Mk,Mv,R> implements MapReduce<INk,INv,Mk,Mv,R> {
@@ -17,7 +15,7 @@ public abstract class MapReduceTemplate<INk,INv,Mk,Mv,R> implements MapReduce<IN
     /*
     * Set of functions provided by the framework user in order to solve the map reduce problem
     * */
-    private Supplier<Pair<INk, INv>> readFunction;
+    private Stream<Pair<INk, INv>> readFunction;
     private Function<Pair<INk, INv>, Stream<Pair<Mk, Mv>>> mapFunction;
     private Comparator<Pair<Mk,Mv>> compareFunction;
     private BiFunction<Mk, List<Mv> ,List<R>> reduceFunction;
@@ -29,7 +27,7 @@ public abstract class MapReduceTemplate<INk,INv,Mk,Mv,R> implements MapReduce<IN
     * they allow to solve the problem with different optimizations and paradigm just by
     * defining the way the single methods operate.
     * */
-    protected abstract Stream<Pair<INk,INv>> read(Supplier<Pair<INk, INv>> supplier);
+    protected Stream<Pair<INk,INv>> read(Stream<Pair<INk, INv>> input){return input;}
     protected abstract Stream<Pair<Mk,Mv>> map(Stream<Pair<INk,INv>> el,Function<Pair<INk, INv>, Stream<Pair<Mk, Mv>>> mapFunction);
     protected abstract Stream<Pair<Mk, List<Mv>>> dataShuffling(Stream<Pair<Mk,Mv>> mappedStream, Comparator<Pair<Mk,Mv>> compareFunction);
     protected abstract Stream<List<R>> reduce(Stream<Pair<Mk, List<Mv>>> collected, BiFunction<Mk, List<Mv> ,List<R>> reduceFunction);
@@ -53,8 +51,8 @@ public abstract class MapReduceTemplate<INk,INv,Mk,Mv,R> implements MapReduce<IN
     }
 
     @Override
-    public void setRead(Supplier<Pair<INk, INv>> supplier) {
-        this.readFunction =supplier;
+    public void setRead(Stream<Pair<INk, INv>> input) {
+        this.readFunction =input;
     }
 
     @Override
