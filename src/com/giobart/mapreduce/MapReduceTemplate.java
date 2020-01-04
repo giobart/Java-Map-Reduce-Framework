@@ -5,7 +5,6 @@ import com.giobart.mapreduce.impl.Pair;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -18,8 +17,8 @@ public abstract class MapReduceTemplate<INk,INv,Mk,Mv,R> implements MapReduce<IN
     private Stream<Pair<INk, INv>> readFunction;
     private Function<Pair<INk, INv>, Stream<Pair<Mk, Mv>>> mapFunction;
     private Comparator<Pair<Mk,Mv>> compareFunction;
-    private BiFunction<Mk, List<Mv> ,List<R>> reduceFunction;
-    private Consumer<List<R>> writeFunction;
+    private Function<Stream<Pair<Mk, List<Mv>>> ,Stream<R>> reduceFunction;
+    private Consumer<Stream<R>> writeFunction;
 
 
     /*
@@ -30,8 +29,8 @@ public abstract class MapReduceTemplate<INk,INv,Mk,Mv,R> implements MapReduce<IN
     protected Stream<Pair<INk,INv>> read(Stream<Pair<INk, INv>> input){return input;}
     protected abstract Stream<Pair<Mk,Mv>> map(Stream<Pair<INk,INv>> el,Function<Pair<INk, INv>, Stream<Pair<Mk, Mv>>> mapFunction);
     protected abstract Stream<Pair<Mk, List<Mv>>> dataShuffling(Stream<Pair<Mk,Mv>> mappedStream, Comparator<Pair<Mk,Mv>> compareFunction);
-    protected abstract Stream<List<R>> reduce(Stream<Pair<Mk, List<Mv>>> collected, BiFunction<Mk, List<Mv> ,List<R>> reduceFunction);
-    protected abstract void write(Stream<List<R>> towrite, Consumer<List<R>> consumer);
+    protected abstract Stream<R> reduce(Stream<Pair<Mk, List<Mv>>> collected, Function<Stream<Pair<Mk, List<Mv>>> ,Stream<R>> reduceFunction);
+    protected abstract void write(Stream<R> towrite, Consumer<Stream<R>> consumer);
 
     /*
     * Method used to solve the Map Reduce problem exploiting the given functions
@@ -46,7 +45,7 @@ public abstract class MapReduceTemplate<INk,INv,Mk,Mv,R> implements MapReduce<IN
         Stream<Pair<INk,INv>> input = read(readFunction);
         Stream<Pair<Mk,Mv>> mapped = map(input,mapFunction);
         Stream<Pair<Mk, List<Mv>>> collected = dataShuffling(mapped,compareFunction);
-        Stream<List<R>> result = reduce(collected,reduceFunction);
+        Stream<R> result = reduce(collected,reduceFunction);
         write(result, writeFunction);
     }
 
@@ -56,7 +55,7 @@ public abstract class MapReduceTemplate<INk,INv,Mk,Mv,R> implements MapReduce<IN
     }
 
     @Override
-    public void setWrite(Consumer<List<R>> consumer) {
+    public void setWrite(Consumer<Stream<R>> consumer) {
         this.writeFunction =consumer;
     }
 
@@ -71,7 +70,7 @@ public abstract class MapReduceTemplate<INk,INv,Mk,Mv,R> implements MapReduce<IN
     }
 
     @Override
-    public void setReduce(BiFunction<Mk, List<Mv>,List<R>> reduceFunction) {
+    public void setReduce(Function<Stream<Pair<Mk, List<Mv>>> ,Stream<R>> reduceFunction) {
         this.reduceFunction=reduceFunction;
     }
 

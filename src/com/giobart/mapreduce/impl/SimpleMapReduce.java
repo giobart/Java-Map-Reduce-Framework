@@ -28,15 +28,13 @@ public class SimpleMapReduce<INk,INv,Mk,Mv,R> extends MapReduceTemplate<INk,INv,
     }
 
     @Override
-    protected Stream<List<R>> reduce(Stream<Pair<Mk, List<Mv>>> collected, BiFunction<Mk, List<Mv> ,List<R>> reduceFunction) {
-        return collected
-                .map(entry -> reduceFunction
-                        .apply(entry.getKey(),entry.getValue()));
+    protected Stream<R> reduce(Stream<Pair<Mk, List<Mv>>> collected, Function<Stream<Pair<Mk, List<Mv>>>,Stream<R>> reduceFunction) {
+        return reduceFunction.apply(collected);
     }
 
     @Override
-    protected void write(Stream<List<R>> towrite,Consumer<List<R>> consumer) {
-        towrite.forEach(consumer);
+    protected void write(Stream<R> towrite,Consumer<Stream<R>> consumer) {
+        consumer.accept(towrite);
     }
 
 
