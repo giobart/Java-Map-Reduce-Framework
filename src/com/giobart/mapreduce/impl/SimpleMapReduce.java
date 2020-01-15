@@ -10,6 +10,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+
+/*
+* A map reduce template implementation based on single machine single core computation. Just a simple example of
+* how the framework can be extended.
+* */
 public class SimpleMapReduce<INk,INv,Mk,Mv,R> extends MapReduceTemplate<INk,INv,Mk,Mv,R> {
 
     @Override
