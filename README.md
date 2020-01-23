@@ -1,2 +1,7 @@
 # Java-Map-Reduce-Framework
-Framework that can be used to process large amount of data exploiting the map-reduce paradigm.
+
+An example of a framework that can be used to process data using the map-reduce paradigm.
+This repository comes out with a simple implementation and 2 example usages.
+
+Taking inspiration from the Apache Hadoop Map Reduce Framework this implementation exploits the functional programming that allows the user to setup the map and reduce functions easly.
+
